@@ -1,6 +1,7 @@
 package jpql;
 
 import javax.persistence.*;
+import java.util.List;
 
 public class JpaMain {
     public static void main(String[] args) {
@@ -14,25 +15,18 @@ public class JpaMain {
 
             Member member = new Member();
             member.setUsername("member1");
+            member.setAge(10);
             em.persist(member);
 
-            // 클래스 전체 조회
-            // 파라미터 바인딩 시 이름 기준으로 처리하기!
-            Member query1 = em.createQuery("select m from Member m where m.username = :username", Member.class)
-                .setParameter("username", "member1")
-                .getSingleResult();
-            System.out.println("result = "+query1);
+            em.flush();
+            em.clear();
 
-            /*  하나의 값 데이터 조회 - 단일 객체 반환
-            Member result = query1.getSingleResult();
-            System.out.println("member : "+result);
-            */
-/*            // String 하나 조회
-            TypedQuery<String> query2 = em.createQuery("select m.username from Member m", String.class);
-            // 클래스나 변수 하나로 조회 안될 때 query
-            Query query3 = em.createQuery("select m.username, m.age from Member m", Query.class);*/
+            List<MemberDTO> result = em.createQuery("select new jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
+                            .getResultList();
 
-
+            MemberDTO memberDTO = result.get(0);
+            System.out.println("memberDTO = "+memberDTO.getUsername());
+            System.out.println("memberDTO = "+memberDTO.getAge());
 
             tx.commit();
         }catch(Exception e){
