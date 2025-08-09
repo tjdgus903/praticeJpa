@@ -2,6 +2,7 @@ package jpql;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 public class JpaMain {
     public static void main(String[] args) {
@@ -21,25 +22,25 @@ public class JpaMain {
             member.setUsername("member1");
             member.setAge(10);
             member.setTeam(team);
+            member.setType(MemberType.ADMIN);
             em.persist(member);
 
             em.flush();
             em.clear();
 
-            // inner 조인
-            String query1 = "select m from Member m inner join m.team t";
-            // outer 조인
-            String query2 = "select m from Member m left outer join m.team t";
-            // 세타조인(막조인)
-            String query3 = "select m from Member m, Team t where m.username = t.name";
-            // 조인 대상 필터링(jpql)
-            String query4 = "select m from Member m left join m.team t on t.name = 'teamA'";
-            // 조인 대상 필터링(sql)
-            String query5 = "select m from Member m left join Team t on m.username = t.name";
-            List<Member> result = em.createQuery(query5, Member.class)
-                            .setFirstResult(1)
-                            .setMaxResults(10)
+            String query1 = "select m.username, 'HELLO', TRUE from Member m" +
+                        "       where m.type = jpql.MemberType.ADMIN";
+            String query2 = "select m.username, 'HELLO', TRUE from Member m" +
+                        "       where m.type = :userType";
+            List<Object[]> result = em.createQuery(query2)
+                            .setParameter("userType", MemberType.ADMIN)
                             .getResultList();
+
+            for (Object[] objects : result) {
+                System.out.println("member = "+objects[0]);
+                System.out.println("member = "+objects[1]);
+                System.out.println("member = "+objects[2]);
+            }
 
             tx.commit();
         }catch(Exception e){
